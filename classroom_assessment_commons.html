@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Assessment Commons (CAC)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+        }
+        .hidden { display: none !important; }
+        .modal-overlay { background-color: rgba(15, 23, 42, 0.75); backdrop-filter: blur(6px); }
+        .star-gold { color: #d97706; fill: #f59e0b; }
+        .star-silver { color: #64748b; fill: #cbd5e1; }
+        
+        /* Premium custom scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Global Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3.5 cursor-pointer select-none" onclick="switchView('public')">
+                <!-- Premium Custom NCME Vector Logo (Corporate Navy & Gold) -->
+                <div class="flex items-center gap-3">
+                    <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" rx="16" fill="url(#ncme-grad)" />
+                        <!-- Measurement Bell Curve & Grid Lines representing psychometrics -->
+                        <path d="M15 75 L85 75" stroke="#93c5fd" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M20 75 C 35 75, 40 25, 50 25 C 60 25, 65 75, 80 75" stroke="#ffffff" stroke-width="3" stroke-linecap="round" fill="none"/>
+                        <!-- Vertical Axis Markings -->
+                        <line x1="50" y1="25" x2="50" y2="75" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="2 3" />
+                        <line x1="35" y1="58" x2="35" y2="75" stroke="#93c5fd" stroke-width="1" stroke-dasharray="2 2" />
+                        <line x1="65" y1="58" x2="65" y2="75" stroke="#93c5fd" stroke-width="1" stroke-dasharray="2 2" />
+                        <!-- Tiny Accent Measurement Marker -->
+                        <rect x="47" y="22" width="6" height="6" rx="1" fill="#f59e0b" />
+                        <defs>
+                            <linearGradient id="ncme-grad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#002855" />
+                                <stop stop-color="#1d4ed8" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div>
+                        <h1 class="font-extrabold text-xl leading-tight text-slate-900 tracking-tight flex items-center gap-1.5">
+                            <span class="text-[#002855]">NCME</span> 
+                            <span class="text-slate-500 font-normal">Classroom Assessment</span>
+                        </h1>
+                        <p class="text-[10px] font-bold text-blue-800 uppercase tracking-widest">Commons Repository</p>
+                    </div>
+                </div>
+            </div>
+            <div id="header-nav" class="flex items-center gap-6 text-sm font-semibold text-slate-600">
+                <button onclick="switchView('public')" class="hover:text-blue-800 transition-colors py-2 px-3 rounded-lg hover:bg-slate-50">Explore Commons</button>
+                <button onclick="openSubmissionModal()" class="bg-blue-50 text-blue-800 hover:bg-blue-100 transition-all px-4 py-2 rounded-lg flex items-center gap-2 border border-blue-200">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Submit a Resource
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER (Swaps between Public and Admin views) -->
+    <main id="app-container" class="flex-grow">
+        <!-- Dynamic content injected here -->
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-slate-800 rounded-lg">
+                    <i data-lucide="layers" class="text-blue-400 w-5 h-5"></i>
+                </div>
+                <span class="font-bold text-white text-lg">NCME CAC Portal</span>
+            </div>
+            <div class="text-sm text-slate-500">
+                &copy; 2026 National Council on Measurement in Education. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Login / Admin Navigation Button -->
+    <button onclick="toggleLogin()" id="login-btn" class="fixed bottom-6 right-6 bg-slate-800 text-white p-4 rounded-full shadow-2xl hover:bg-slate-700 hover:scale-105 transition-all z-50 flex items-center gap-2 group">
+        <i data-lucide="lock" class="w-5 h-5"></i>
+        <span id="login-text" class="hidden group-hover:inline-block font-medium pr-2">Admin Dashboard</span>
+    </button>
+
+    <!-- SCORING / EVALUATION RUBRIC MODAL -->
+    <div id="scoring-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-overlay p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Resource Evaluation Checklist</h2>
+                    <p class="text-xs text-slate-500 mt-1">NCME Classroom Assessment Quality standards assessment</p>
+                </div>
+                <button onclick="closeModal('scoring-modal')" class="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-grow space-y-6">
+                <div class="bg-blue-50/70 border border-blue-100 p-4 rounded-xl">
+                    <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider block mb-1">Evaluating Resource:</span>
+                    <h3 id="modal-resource-title" class="text-base font-bold text-slate-900 leading-tight">Resource Title</h3>
+                </div>
+                
+                <form id="rubric-form" onsubmit="submitReview(event)" class="space-y-6">
+                    <input type="hidden" id="modal-resource-id" value="">
+                    
+                    <!-- Criterion 1 -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all">
+                        <label class="block font-bold text-slate-800 text-sm mb-2">1. Alignment to NCME Standards</label>
+                        <p class="text-xs text-slate-500 mb-3">Alignment with foundational measurement principles (validity, reliability, fairness).</p>
+                        <select id="score-alignment" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" required>
+                            <option value="">Choose Score Rating...</option>
+                            <option value="4">4 - Exemplary (Deeply aligned with modern measurement science)</option>
+                            <option value="3">3 - Proficient (Generally aligned, no technical inaccuracies)</option>
+                            <option value="2">2 - Developing (Minor alignment issues/outdated terminology)</option>
+                            <option value="1">1 - Inadequate (Contradicts modern measurement principles)</option>
+                        </select>
+                    </div>
+
+                    <!-- Criterion 2 -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all">
+                        <label class="block font-bold text-slate-800 text-sm mb-2">2. Practical Utility</label>
+                        <p class="text-xs text-slate-500 mb-3">Highly actionable; provides clear "how-to" steps or direct tools.</p>
+                        <select id="score-utility" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" required>
+                            <option value="">Choose Score Rating...</option>
+                            <option value="4">4 - Exemplary (Highly actionable tools & clear implementation guides)</option>
+                            <option value="3">3 - Proficient (Useful with minor contextual translation needed)</option>
+                            <option value="2">2 - Developing (Interesting theory, lacks direct practical steps)</option>
+                            <option value="1">1 - Inadequate (Too abstract, unusable for general practitioners)</option>
+                        </select>
+                    </div>
+
+                    <!-- Criterion 3 -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all">
+                        <label class="block font-bold text-slate-800 text-sm mb-2">3. Equity & Inclusion</label>
+                        <p class="text-xs text-slate-500 mb-3">Proactively addresses bias and supports diverse learner needs.</p>
+                        <select id="score-equity" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" required>
+                            <option value="">Choose Score Rating...</option>
+                            <option value="4">4 - Exemplary (Proactively prevents bias, fully inclusive design)</option>
+                            <option value="3">3 - Proficient (Neutral, does not feature exclusionary language)</option>
+                            <option value="2">2 - Developing (Lacks broad consideration for diverse populations)</option>
+                            <option value="1">1 - Inadequate (Promotes inequitable or outdated assessment practices)</option>
+                        </select>
+                    </div>
+
+                    <!-- Criterion 4 -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all">
+                        <label class="block font-bold text-slate-800 text-sm mb-2">4. Engagement & Quality</label>
+                        <p class="text-xs text-slate-500 mb-3">Professional formatting, clear, easy to navigate or digest.</p>
+                        <select id="score-quality" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" required>
+                            <option value="">Choose Score Rating...</option>
+                            <option value="4">4 - Exemplary (Highly professional production quality and engaging design)</option>
+                            <option value="3">3 - Proficient (Clear and legible layout with only minor design flaws)</option>
+                            <option value="2">2 - Developing (Cluttered or distracting presentation/mediocre tech quality)</option>
+                            <option value="1">1 - Inadequate (Extremely poor design, layout makes it unusable)</option>
+                        </select>
+                    </div>
+
+                    <!-- Criterion 5 -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 hover:border-slate-300 transition-all">
+                        <label class="block font-bold text-slate-800 text-sm mb-2">5. Currency</label>
+                        <p class="text-xs text-slate-500 mb-3">Addresses modern challenges (e.g. AI tools, current guidelines).</p>
+                        <select id="score-currency" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" required>
+                            <option value="">Choose Score Rating...</option>
+                            <option value="4">4 - Exemplary (Addresses modern challenges and state frameworks)</option>
+                            <option value="3">3 - Proficient (Up-to-date and clearly relevant for classroom use)</option>
+                            <option value="2">2 - Developing (Somewhat dated, mentions obsolete standards)</option>
+                            <option value="1">1 - Inadequate (Completely obsolete or outdated policies)</option>
+                        </select>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                        <button type="button" onclick="closeModal('scoring-modal')" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Cancel</button>
+                        <button type="submit" class="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-md transition-all">Submit Scoresheet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMIT RESOURCE MODAL -->
+    <div id="submission-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-overlay p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Submit a New Resource</h2>
+                    <p class="text-xs text-slate-500 mt-1">Contribute high-quality artifacts to the Classroom Assessment Commons</p>
+                </div>
+                <button onclick="closeModal('submission-modal')" class="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-grow space-y-6">
+                <form id="submission-form" onsubmit="handleResourceSubmission(event)" class="space-y-6">
+                    <!-- General Details -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Resource Title *</label>
+                            <input type="text" id="sub-title" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="e.g., Guide to Ambitious Instruction" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">URL / Link *</label>
+                            <input type="url" id="sub-url" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="https://example.com/resource" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Your Name *</label>
+                            <input type="text" id="sub-author-name" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Jane Doe" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Your Contact Email *</label>
+                            <input type="email" id="sub-author-email" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="jane.doe@ncme.org" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Why should this be included? *</label>
+                        <textarea id="sub-use-case" rows="3" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Briefly describe the practical utility and alignment with classroom learning goals..." required></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Source Group / Organization</label>
+                            <input type="text" id="sub-provider" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="e.g., Michigan Assessment Consortium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Estimated Length / Format (e.g. "3 pages")</label>
+                            <input type="text" id="sub-length" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="e.g., 3 pages, 15-minute video">
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-6">
+                        <h4 class="font-bold text-sm text-slate-800 mb-4">Select Pertinent Filters & Metadata Tags</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                            <!-- Audience Tags -->
+                            <div>
+                                <span class="block font-semibold text-slate-900 mb-2">Audience</span>
+                                <div class="space-y-1.5 max-h-40 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-audience" value="Student/Family" class="rounded text-blue-600"> Student/Family</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-audience" value="Teacher" class="rounded text-blue-600"> Teacher</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-audience" value="Student Teacher" class="rounded text-blue-600"> Student Teacher</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-audience" value="Building Administrator" class="rounded text-blue-600"> Building Administrator</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-audience" value="District Administrator" class="rounded text-blue-600"> District Administrator</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-audience" value="Policymaker" class="rounded text-blue-600"> Policymaker</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-audience" value="Public" class="rounded text-blue-600"> Public</label>
+                                </div>
+                            </div>
+
+                            <!-- Topic Tags -->
+                            <div>
+                                <span class="block font-semibold text-slate-900 mb-2">Topic</span>
+                                <div class="space-y-1.5 max-h-40 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Formative Assessment" class="rounded text-blue-600"> Formative Assessment</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Summative Assessment" class="rounded text-blue-600"> Summative Assessment</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Criterion- vs Normative Test Score Interpretations" class="rounded text-blue-600"> Criterion- vs Normative</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Grading" class="rounded text-blue-600"> Grading</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Balance in Assessment" class="rounded text-blue-600"> Balance in Assessment</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Adjusting Instruction" class="rounded text-blue-600"> Adjusting Instruction</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Curriculum Improvement" class="rounded text-blue-600"> Curriculum Improvement</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Assessment Results" class="rounded text-blue-600"> Assessment Results</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Assessment Use/Reporting" class="rounded text-blue-600"> Assessment Use/Reporting</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Assessment Policy" class="rounded text-blue-600"> Assessment Policy</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-topic" value="Accountability" class="rounded text-blue-600"> Accountability</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm mt-4">
+                            <!-- Grade Range Tags -->
+                            <div>
+                                <span class="block font-semibold text-slate-900 mb-2">Grade Range</span>
+                                <div class="space-y-1.5 max-h-40 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-grade" value="Birth to Pre-K" class="rounded text-blue-600"> Birth to Pre-K</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-grade" value="K-3" class="rounded text-blue-600"> K-3</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-grade" value="4-6" class="rounded text-blue-600"> 4-6</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-grade" value="7-9" class="rounded text-blue-600"> 7-9</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-grade" value="High School" class="rounded text-blue-600"> High School</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-grade" value="All Grades" class="rounded text-blue-600"> All Grades</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-grade" value="Higher Education" class="rounded text-blue-600"> Higher Ed</label>
+                                </div>
+                            </div>
+
+                            <!-- Assessment Type -->
+                            <div>
+                                <span class="block font-semibold text-slate-900 mb-2">Assessment Type</span>
+                                <div class="space-y-1.5 max-h-40 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-asstype" value="Formative Assessment" class="rounded text-blue-600"> Formative</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-asstype" value="Summative Assessment" class="rounded text-blue-600"> Summative</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-asstype" value="Interim/Benchmark Assessment" class="rounded text-blue-600"> Interim/Benchmark</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" name="sub-asstype" value="Statewide Assessment" class="rounded text-blue-600"> Statewide</label>
+                                </div>
+                            </div>
+
+                            <!-- Resource Type -->
+                            <div>
+                                <span class="block font-semibold text-slate-900 mb-2">Resource Type</span>
+                                <div class="space-y-1.5 max-h-40 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                    <label class="flex items-center gap-2"><input type="radio" name="sub-restype" value="Document" checked class="text-blue-600"> Document</label>
+                                    <label class="flex items-center gap-2"><input type="radio" name="sub-restype" value="Video" class="text-blue-600"> Video</label>
+                                    <label class="flex items-center gap-2"><input type="radio" name="sub-restype" value="Podcast" class="text-blue-600"> Podcast</label>
+                                    <label class="flex items-center gap-2"><input type="radio" name="sub-restype" value="Website" class="text-blue-600"> Website</label>
+                                    <label class="flex items-center gap-2"><input type="radio" name="sub-restype" value="Rubric" class="text-blue-600"> Rubric</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+                        <button type="button" onclick="closeModal('submission-modal')" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Cancel</button>
+                        <button type="submit" class="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-md transition-all">Submit Resource</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // --- DATA STORE ---
+        // Seeded with complete metadata aligned directly with our filter structures.
+        let dbResources = [
+            {
+                id: 1,
+                title: "What do we mean by assessment literacy?",
+                url: "https://www.michiganassessmentconsortium.org/wp-content/uploads/4-Dec16-2016_Dec_ALN-LEARNING_POINT_LITERACY-2-1.pdf",
+                provider: "Michigan Assessment Consortium",
+                useCase: "A brief Learning Point addressing definition, components, and practical value of assessment literacy.",
+                length: "2 pages",
+                audience: ["Teacher", "Student Teacher", "Building Administrator", "Public"],
+                topics: ["Formative Assessment", "Balance in Assessment", "Curriculum Improvement"],
+                gradeRange: ["All Grades"],
+                assessmentType: ["Formative Assessment", "Interim/Benchmark Assessment"],
+                resourceType: "Document",
+                reviews: [19, 18], // 2 reviews, pending 3rd for Gold
+                totalScore: null,
+                seal: null
+            },
+            {
+                id: 2,
+                title: "Assessment Literacy Standards: A National Imperative",
+                url: "https://www.michiganassessmentconsortium.org/wp-content/uploads/mac_AssessLitStds_2017_screen-9.19.17-2.pdf",
+                provider: "Michigan Assessment Consortium",
+                useCase: "A comprehensive guide identifying key learning targets for teachers, administrators, and policy leaders.",
+                length: "32 pages",
+                audience: ["Teacher", "Building Administrator", "District Administrator", "Policymaker"],
+                topics: ["Assessment Policy", "Accountability", "Assessment Use/Reporting"],
+                gradeRange: ["All Grades"],
+                assessmentType: ["Formative Assessment", "Summative Assessment", "Statewide Assessment"],
+                resourceType: "Document",
+                reviews: [15, 14, 16], // 3 reviews, avg 15 -> Silver
+                totalScore: 15,
+                seal: "Silver"
+            },
+            {
+                id: 3,
+                title: "What is ambitious instruction?",
+                url: "https://www.michiganassessmentconsortium.org/wp-content/uploads/LP-WHAT_IS_AMBITIOUS_TEACHING.pdf",
+                provider: "Michigan Assessment Consortium",
+                useCase: "Explores clear instructional strategies that work in tandem with daily assessments.",
+                length: "Varies",
+                audience: ["Teacher", "Student Teacher", "District Administrator"],
+                topics: ["Adjusting Instruction", "Curriculum Improvement", "Formative Assessment"],
+                gradeRange: ["K-3", "4-6", "7-9", "High School"],
+                assessmentType: ["Formative Assessment"],
+                resourceType: "Website",
+                reviews: [20, 19, 19], // 3 reviews, avg 19.3 -> Gold
+                totalScore: 19.3,
+                seal: "Gold"
+            },
+            {
+                id: 4,
+                title: "Proficiency and growth: What's the difference?",
+                url: "https://www.michiganassessmentconsortium.org/wp-content/uploads/2017_May_ProficiencyGrowth2-1.pdf",
+                provider: "Michigan Assessment Consortium",
+                useCase: "Highlights the technical and practical differentiation between static achievement scores and growth metrics.",
+                length: "2 pages",
+                audience: ["District Administrator", "Policymaker", "Public"],
+                topics: ["Criterion- vs Normative Test Score Interpretations", "Assessment Results", "Accountability"],
+                gradeRange: ["All Grades"],
+                assessmentType: ["Statewide Assessment", "Summative Assessment"],
+                resourceType: "Document",
+                reviews: [12, 11], // 2 reviews, pending
+                totalScore: null,
+                seal: null
+            },
+            {
+                id: 5,
+                title: "Criterion- and norm-referenced score reporting",
+                url: "https://www.michiganassessmentconsortium.org/wp-content/uploads/LP_NORM-CRITERION.pdf",
+                provider: "Michigan Assessment Consortium",
+                useCase: "Clear, understandable guide to explaining relative standing compared to criterion competency.",
+                length: "2 pages",
+                audience: ["Teacher", "Building Administrator", "Public"],
+                topics: ["Criterion- vs Normative Test Score Interpretations", "Assessment Results"],
+                gradeRange: ["All Grades"],
+                assessmentType: ["Summative Assessment", "Interim/Benchmark Assessment"],
+                resourceType: "Document",
+                reviews: [16, 17], // 2 reviews, pending 3rd for Silver
+                totalScore: null,
+                seal: null
+            },
+            {
+                id: 6,
+                title: "Performance assessment: What is it and why is it useful?",
+                url: "https://www.michiganassessmentconsortium.org/wp-content/uploads/2019_May_WHAT-ARE-SUMMATIVE-ASSESSMENTS3.pdf",
+                provider: "Michigan Assessment Consortium",
+                useCase: "A comprehensive instructional video exploring balanced classroom portfolios.",
+                length: "15 mins",
+                audience: ["Teacher", "Student Teacher"],
+                topics: ["Formative Assessment", "Grading"],
+                gradeRange: ["4-6", "7-9", "High School"],
+                assessmentType: ["Formative Assessment", "Summative Assessment"],
+                resourceType: "Video",
+                reviews: [], 
+                totalScore: null,
+                seal: null
+            }
+        ];
+
+        // --- APP STATE ---
+        let currentView = 'public'; // 'public' or 'admin'
+        let isLoggedIn = false;
+        let selectedPathwaysAudience = null; // Storing active pre-learning audience path
+
+        // --- CORE INITIALIZATION ---
+        function init() {
+            renderView();
+            lucide.createIcons();
+        }
+
+        function toggleLogin() {
+            isLoggedIn = !isLoggedIn;
+            currentView = isLoggedIn ? 'admin' : 'public';
+            
+            const loginBtn = document.getElementById('login-btn');
+            if(isLoggedIn) {
+                loginBtn.innerHTML = '<i data-lucide="log-out" class="w-5 h-5"></i><span id="login-text" class="hidden group-hover:inline-block font-medium pr-2">Return to Public</span>';
+                loginBtn.classList.remove('bg-slate-800');
+                loginBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+            } else {
+                loginBtn.innerHTML = '<i data-lucide="lock" class="w-5 h-5"></i><span id="login-text" class="hidden group-hover:inline-block font-medium pr-2">Admin Dashboard</span>';
+                loginBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                loginBtn.classList.add('bg-slate-800', 'hover:bg-slate-700');
+            }
+            
+            renderView();
+            lucide.createIcons();
+        }
+
+        function switchView(view) {
+            currentView = view;
+            if (view === 'public') {
+                isLoggedIn = false;
+                const loginBtn = document.getElementById('login-btn');
+                loginBtn.innerHTML = '<i data-lucide="lock" class="w-5 h-5"></i><span id="login-text" class="hidden group-hover:inline-block font-medium pr-2">Admin Dashboard</span>';
+                loginBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                loginBtn.classList.add('bg-slate-800', 'hover:bg-slate-700');
+            }
+            renderView();
+            lucide.createIcons();
+        }
+
+        function renderView() {
+            const container = document.getElementById('app-container');
+            container.innerHTML = '';
+            
+            if (currentView === 'public') {
+                container.innerHTML = getPublicHTML();
+                renderPublicResources();
+                attachFilterListeners();
+            } else if (currentView === 'admin') {
+                container.innerHTML = getAdminHTML();
+                renderAdminTable();
+            }
+        }
+
+        // --- PRE-LEARNING PATHWAY ACTION ---
+        function setPreLearningPath(audienceTag) {
+            selectedPathwaysAudience = audienceTag;
+            renderView();
+            
+            // Auto-check corresponding audience checkbox in the filters
+            const checkbox = document.querySelector(`input[name="filter-audience"][value="${audienceTag}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+                applyDynamicFilters();
+            }
+        }
+
+        function clearPathwaysFilter() {
+            selectedPathwaysAudience = null;
+            renderView();
+        }
+
+        // --- PUBLIC VIEW TEMPLATE ---
+        function getPublicHTML() {
+            return `
+            <!-- Pre-Learning & Hero Banner with NCME Premium Blue Palette -->
+            <section class="bg-gradient-to-b from-[#002855] via-slate-900 to-slate-950 text-white py-16 border-b border-blue-900 relative overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/40 via-transparent to-transparent"></div>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    
+                    <div class="max-w-3xl mb-12">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border border-blue-500/30">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-400"></i> Curated NCME Resource Commons
+                        </span>
+                        <h2 class="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight leading-tight">Classroom Assessment Commons (CAC)</h2>
+                        <p class="text-lg text-slate-300 leading-relaxed font-light">
+                            Providing teachers, leaders, and policymakers with high-quality classroom assessment resource artifacts. Each asset has been evaluated and peer-reviewed using rigorous psychometric standards to deepen learner agency and enhance instructional design.
+                        </p>
+                    </div>
+
+                    <!-- Pre-Learning Audience Pathways -->
+                    <div class="mt-8">
+                        <div class="flex justify-between items-end mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold tracking-tight">Pre-Learning Pathway Navigation</h3>
+                                <p class="text-xs text-slate-400 mt-1">Select your role below to explore essential concepts and tailored resources.</p>
+                            </div>
+                            ${selectedPathwaysAudience ? `<button onclick="clearPathwaysFilter()" class="text-xs text-blue-400 hover:underline flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Clear Pathway Filter</button>` : ''}
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Teachers Card -->
+                            <div onclick="setPreLearningPath('Teacher')" class="bg-slate-800/60 border ${selectedPathwaysAudience === 'Teacher' ? 'border-blue-400 ring-2 ring-blue-500/30 bg-slate-800' : 'border-slate-700/60'} hover:border-blue-400 p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] duration-200">
+                                <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-4">
+                                    <i data-lucide="book-open" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-bold text-base text-white mb-1.5">Welcome, Teachers</h4>
+                                <p class="text-xs text-slate-400 mb-3">Learn Formative Assessment practices to integrate into lesson plans seamlessly.</p>
+                                <span class="text-xs text-blue-400 font-semibold flex items-center gap-1 group-hover:underline">Explore Guides <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                            </div>
+
+                            <!-- Administrators Card -->
+                            <div onclick="setPreLearningPath('Building Administrator')" class="bg-slate-800/60 border ${selectedPathwaysAudience === 'Building Administrator' ? 'border-blue-400 ring-2 ring-blue-500/30 bg-slate-800' : 'border-slate-700/60'} hover:border-blue-400 p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] duration-200">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4">
+                                    <i data-lucide="building-2" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-bold text-base text-white mb-1.5">Welcome, Administrators</h4>
+                                <p class="text-xs text-slate-400 mb-3">Support teacher instruction strategies, professional learning, and balanced systems.</p>
+                                <span class="text-xs text-indigo-400 font-semibold flex items-center gap-1 group-hover:underline">Explore Strategy <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                            </div>
+
+                            <!-- Policymakers Card -->
+                            <div onclick="setPreLearningPath('Policymaker')" class="bg-slate-800/60 border ${selectedPathwaysAudience === 'Policymaker' ? 'border-blue-400 ring-2 ring-blue-500/30 bg-slate-800' : 'border-slate-700/60'} hover:border-blue-400 p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] duration-200">
+                                <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-4">
+                                    <i data-lucide="landmark" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-bold text-base text-white mb-1.5">Welcome, Policymakers</h4>
+                                <p class="text-xs text-slate-400 mb-3">Examine accountability frameworks, statewide results, and policy reporting.</p>
+                                <span class="text-xs text-purple-400 font-semibold flex items-center gap-1 group-hover:underline">Explore Policy <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                            </div>
+
+                            <!-- Families Card -->
+                            <div onclick="setPreLearningPath('Student/Family')" class="bg-slate-800/60 border ${selectedPathwaysAudience === 'Student/Family' ? 'border-blue-400 ring-2 ring-blue-500/30 bg-slate-800' : 'border-slate-700/60'} hover:border-blue-400 p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] duration-200">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-4">
+                                    <i data-lucide="users" class="w-5 h-5"></i>
+                                </div>
+                                <h4 class="font-bold text-base text-white mb-1.5">Students & Families</h4>
+                                <p class="text-xs text-slate-400 mb-3">Guides on learning benchmarks, score reporting, and assessment clarity.</p>
+                                <span class="text-xs text-amber-400 font-semibold flex items-center gap-1 group-hover:underline">Explore Guides <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Search and Filter Layout -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col lg:flex-row gap-8">
+                
+                <!-- Expanded Filters Sidebar -->
+                <aside class="w-full lg:w-80 shrink-0">
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm sticky top-24 max-h-[85vh] overflow-y-auto">
+                        <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="sliders-horizontal" class="w-5 h-5 text-slate-500"></i>
+                                <h2 class="font-bold text-base text-slate-900">Search Filters</h2>
+                            </div>
+                            <button onclick="clearAllFilters()" class="text-xs text-slate-400 hover:text-blue-700 font-semibold">Clear All</button>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <!-- AUDIENCE -->
+                            <div>
+                                <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-3">Audience</h3>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-audience" value="Student/Family" class="rounded text-blue-700 focus:ring-blue-600"> Student/Family</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-audience" value="Teacher" class="rounded text-blue-700 focus:ring-blue-600"> Teacher</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-audience" value="Student Teacher" class="rounded text-blue-700 focus:ring-blue-600"> Student Teacher</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-audience" value="Building Administrator" class="rounded text-blue-700 focus:ring-blue-600"> Building Admin</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-audience" value="District Administrator" class="rounded text-blue-700 focus:ring-blue-600"> District Admin</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-audience" value="Policymaker" class="rounded text-blue-700 focus:ring-blue-600"> Policymaker</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-audience" value="Public" class="rounded text-blue-700 focus:ring-blue-600"> Public</label>
+                                </div>
+                            </div>
+                            
+                            <!-- TOPIC -->
+                            <div>
+                                <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-3">Topic</h3>
+                                <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Formative Assessment" class="rounded text-blue-700 focus:ring-blue-600"> Formative Assessment</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Summative Assessment" class="rounded text-blue-700 focus:ring-blue-600"> Summative Assessment</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Criterion- vs Normative Test Score Interpretations" class="rounded text-blue-700 focus:ring-blue-600"> Criterion- vs Normative</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Grading" class="rounded text-blue-700 focus:ring-blue-600"> Grading</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Balance in Assessment" class="rounded text-blue-700 focus:ring-blue-600"> Balance in Assessment</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Adjusting Instruction" class="rounded text-blue-700 focus:ring-blue-600"> Adjusting Instruction</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Curriculum Improvement" class="rounded text-blue-700 focus:ring-blue-600"> Curriculum Improvement</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Assessment Results" class="rounded text-blue-700 focus:ring-blue-600"> Assessment Results</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Assessment Use/Reporting" class="rounded text-blue-700 focus:ring-blue-600"> Assessment Use/Reporting</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Assessment Policy" class="rounded text-blue-700 focus:ring-blue-600"> Assessment Policy</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-topic" value="Accountability" class="rounded text-blue-700 focus:ring-blue-600"> Accountability</label>
+                                </div>
+                            </div>
+
+                            <!-- GRADE RANGE -->
+                            <div>
+                                <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-3">Grade Range</h3>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-grade" value="Birth to Pre-K" class="rounded text-blue-700 focus:ring-blue-600"> Birth to Pre-K</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-grade" value="K-3" class="rounded text-blue-700 focus:ring-blue-600"> K-3</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-grade" value="4-6" class="rounded text-blue-700 focus:ring-blue-600"> 4-6</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-grade" value="7-9" class="rounded text-blue-700 focus:ring-blue-600"> 7-9</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-grade" value="High School" class="rounded text-blue-700 focus:ring-blue-600"> High School</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-grade" value="All Grades" class="rounded text-blue-700 focus:ring-blue-600"> All Grades</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-grade" value="Higher Education" class="rounded text-blue-700 focus:ring-blue-600"> Higher Education</label>
+                                </div>
+                            </div>
+
+                            <!-- ASSESSMENT TYPE -->
+                            <div>
+                                <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-3">Assessment Type</h3>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-asstype" value="Formative Assessment" class="rounded text-blue-700 focus:ring-blue-600"> Formative</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-asstype" value="Summative Assessment" class="rounded text-blue-700 focus:ring-blue-600"> Summative</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-asstype" value="Interim/Benchmark Assessment" class="rounded text-blue-700 focus:ring-blue-600"> Interim / Benchmark</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-asstype" value="Statewide Assessment" class="rounded text-blue-700 focus:ring-blue-600"> Statewide</label>
+                                </div>
+                            </div>
+
+                            <!-- RESOURCE TYPE -->
+                            <div>
+                                <h3 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-3">Resource Type</h3>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-restype" value="Document" class="rounded text-blue-700 focus:ring-blue-600"> Document</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-restype" value="Video" class="rounded text-blue-700 focus:ring-blue-600"> Video</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-restype" value="Podcast" class="rounded text-blue-700 focus:ring-blue-600"> Podcast</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-restype" value="Website" class="rounded text-blue-700 focus:ring-blue-600"> Website</label>
+                                    <label class="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer"><input type="checkbox" name="filter-restype" value="Rubric" class="rounded text-blue-700 focus:ring-blue-600"> Rubric</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Search and Grid Area -->
+                <div class="flex-grow">
+                    <!-- Search Input Bar -->
+                    <div class="relative mb-8">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="h-5 w-5 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="public-search" oninput="applyDynamicFilters()" class="block w-full pl-11 pr-4 py-4 bg-white border border-slate-200 rounded-2xl leading-5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-lg shadow-sm placeholder-slate-400 transition-all" placeholder="Search the Commons database by title, provider, or topic keywords...">
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-xs text-blue-700 font-bold">
+                            <i data-lucide="database" class="w-4 h-4 mr-1"></i> Connected
+                        </div>
+                    </div>
+
+                    <!-- Relocated Quality Standards Legend -->
+                    <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl p-6 border border-slate-200 mb-8 shadow-sm">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-sm tracking-tight uppercase">NCME Classroom Assessment Quality Standards</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Resources verified through the CAC 20-Point Quality Checklist</p>
+                            </div>
+                            <span class="text-xs text-slate-400 bg-white border border-slate-200 px-2.5 py-1 rounded-full font-medium">Peer Evaluated</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                                    <i data-lucide="star" class="w-5 h-5 star-gold"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-bold text-slate-800 block">Gold Standard Rating</span>
+                                    <span class="text-[11px] text-slate-500">Exceptional resource averaging 18 to 20 rubric points.</span>
+                                </div>
+                            </div>
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0">
+                                    <i data-lucide="star" class="w-5 h-5 star-silver"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-bold text-slate-800 block">Silver Standard Rating</span>
+                                    <span class="text-[11px] text-slate-500">Core standard entry scoring 14 to 17 rubric points.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resources Dynamic Output -->
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <span id="resource-count" class="font-bold text-slate-900">Checking repository...</span>
+                        </div>
+                        <span class="text-xs text-slate-500 flex items-center gap-1.5 font-semibold">
+                            <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i> Sorted by: Quality Stars
+                        </span>
+                    </div>
+
+                    <div id="public-resources-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </section>
+            `;
+        }
+
+        // --- ADMIN VIEW TEMPLATE ---
+        function getAdminHTML() {
+            return `
+            <div class="bg-gradient-to-r from-blue-950 to-slate-950 pb-32 pt-12">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                    <div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-300 mb-3 border border-blue-500/20">
+                            <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></span> Security Active
+                        </span>
+                        <h1 class="text-3xl font-extrabold text-white tracking-tight">Classroom Assessment Commons Panel</h1>
+                        <p class="mt-2 text-slate-300 text-sm">Review, evaluate, and rate resources according to the 20-Point Peer Evaluation Rubric.</p>
+                    </div>
+                    <button onclick="switchView('public')" class="bg-white/10 text-white hover:bg-white/20 transition-all text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2">
+                        <i data-lucide="eye" class="w-4 h-4"></i> View Public Site
+                    </button>
+                </div>
+            </div>
+            
+            <main class="-mt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+                    <!-- Dashboard Table Header -->
+                    <div class="p-6 border-b border-slate-200 bg-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-blue-50 rounded-lg text-blue-600 border border-blue-100">
+                                <i data-lucide="table-properties" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">Master Resource Database</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Admin view of curated artifacts & scoresheets</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg font-bold flex items-center gap-1"><i data-lucide="star" class="w-3.5 h-3.5 star-gold"></i> Gold: 18-20 Avg</span>
+                            <span class="px-3 py-1.5 bg-slate-50 text-slate-700 border border-slate-200 rounded-lg font-bold flex items-center gap-1"><i data-lucide="star" class="w-3.5 h-3.5 text-slate-400"></i> Silver: 14-17 Avg</span>
+                        </div>
+                    </div>
+
+                    <!-- Database Table Layout -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Resource Title / Link</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Metadata Tags</th>
+                                    <th class="px-6 py-4 class text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Individual Scores</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Reviews</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Score</th>
+                                    <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Quality Seal</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Evaluate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body" class="bg-white divide-y divide-slate-100">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            `;
+        }
+
+        // --- RENDER PUBLIC GRID (WITH ADVANCED DYNAMIC FILTERING) ---
+        function renderPublicResources() {
+            const grid = document.getElementById('public-resources-grid');
+            if(!grid) return;
+
+            // Gather active checked values
+            const selectedAudiences = Array.from(document.querySelectorAll('input[name="filter-audience"]:checked')).map(el => el.value);
+            const selectedTopics = Array.from(document.querySelectorAll('input[name="filter-topic"]:checked')).map(el => el.value);
+            const selectedGrades = Array.from(document.querySelectorAll('input[name="filter-grade"]:checked')).map(el => el.value);
+            const selectedAssTypes = Array.from(document.querySelectorAll('input[name="filter-asstype"]:checked')).map(el => el.value);
+            const selectedResTypes = Array.from(document.querySelectorAll('input[name="filter-restype"]:checked')).map(el => el.value);
+            const searchVal = document.getElementById('public-search').value.toLowerCase().trim();
+
+            // Filter calculation
+            const filtered = dbResources.filter(res => {
+                // Search term matching
+                if (searchVal !== '') {
+                    const matchesSearch = res.title.toLowerCase().includes(searchVal) || 
+                                          res.provider.toLowerCase().includes(searchVal) || 
+                                          res.useCase.toLowerCase().includes(searchVal);
+                    if (!matchesSearch) return false;
+                }
+
+                // Audience matching
+                if (selectedAudiences.length > 0) {
+                    const matchesAudience = res.audience.some(aud => selectedAudiences.includes(aud));
+                    if (!matchesAudience) return false;
+                }
+
+                // Topic matching
+                if (selectedTopics.length > 0) {
+                    const matchesTopic = res.topics.some(t => selectedTopics.includes(t));
+                    if (!matchesTopic) return false;
+                }
+
+                // Grade matching
+                if (selectedGrades.length > 0) {
+                    const matchesGrade = res.gradeRange.some(g => selectedGrades.includes(g)) || res.gradeRange.includes("All Grades");
+                    if (!matchesGrade) return false;
+                }
+
+                // Assessment Type matching
+                if (selectedAssTypes.length > 0) {
+                    const matchesAsst = res.assessmentType.some(a => selectedAssTypes.includes(a));
+                    if (!matchesAsst) return false;
+                }
+
+                // Resource Type matching
+                if (selectedResTypes.length > 0) {
+                    const matchesRes = selectedResTypes.includes(res.resourceType);
+                    if (!matchesRes) return false;
+                }
+
+                return true;
+            });
+
+            // Sort by Stars (Gold first, then Silver, then unrated)
+            filtered.sort((a, b) => {
+                const rank = { 'Gold': 3, 'Silver': 2, null: 1 };
+                return (rank[b.seal] || 1) - (rank[a.seal] || 1);
+            });
+
+            // Update Count Label
+            const countLabel = document.getElementById('resource-count');
+            countLabel.textContent = `${filtered.length} Resources Found matching filters`;
+
+            grid.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-16 text-center bg-white border border-slate-200 rounded-2xl">
+                        <i data-lucide="search-code" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
+                        <h4 class="font-bold text-slate-800 text-lg">No matches found</h4>
+                        <p class="text-sm text-slate-500 mt-1 max-w-md mx-auto">Try clearing some filtering attributes in the sidebar or adjusting your search phrase.</p>
+                        <button onclick="clearAllFilters()" class="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-600 transition-colors">Reset Filter Board</button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            filtered.forEach(res => {
+                let badgeHTML = '';
+                let borderStyle = 'border-slate-200';
+                if (res.seal === 'Gold') {
+                    badgeHTML = `
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 shadow-sm">
+                            <i data-lucide="star" class="w-3.5 h-3.5 star-gold"></i> Gold Standard Seal
+                        </span>`;
+                    borderStyle = 'border-amber-300 shadow-md shadow-amber-50/50';
+                } else if (res.seal === 'Silver') {
+                    badgeHTML = `
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 shadow-sm">
+                            <i data-lucide="star" class="w-3.5 h-3.5 text-slate-400"></i> Silver Standard Seal
+                        </span>`;
+                    borderStyle = 'border-slate-300';
+                }
+
+                // Match icon
+                let iconName = 'file-text';
+                if (res.resourceType === 'Video') iconName = 'video';
+                if (res.resourceType === 'Podcast') iconName = 'mic';
+                if (res.resourceType === 'Website') iconName = 'globe';
+                if (res.resourceType === 'Rubric') iconName = 'clipboard-list';
+
+                grid.innerHTML += `
+                    <div class="bg-white border ${borderStyle} rounded-2xl p-6 hover:shadow-lg transition-all flex flex-col justify-between group">
+                        <div>
+                            <div class="flex justify-between items-start gap-4 mb-4">
+                                <div class="p-2.5 bg-slate-50 rounded-xl group-hover:bg-blue-50 transition-colors shrink-0">
+                                    <i data-lucide="${iconName}" class="w-6 h-6 text-slate-600 group-hover:text-blue-600"></i>
+                                </div>
+                                <div class="flex flex-col items-end gap-1.5">
+                                    ${badgeHTML}
+                                    <span class="text-xs text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md font-semibold">${res.length || 'Unknown size'}</span>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors mb-2 leading-snug">
+                                <a href="${res.url}" target="_blank" class="hover:underline flex items-center gap-1">
+                                    ${res.title} <i data-lucide="external-link" class="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                </a>
+                            </h3>
+                            
+                            <p class="text-xs text-slate-500 font-semibold mb-3">Provider: <span class="text-slate-700">${res.provider}</span></p>
+                            <p class="text-sm text-slate-600 leading-relaxed mb-6">${res.useCase}</p>
+                        </div>
+                        
+                        <div class="border-t border-slate-100 pt-4 mt-auto">
+                            <div class="flex flex-wrap gap-1.5">
+                                ${res.audience.map(aud => `<span class="bg-blue-50/50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-100">Audience: ${aud}</span>`).join('')}
+                                ${res.topics.map(top => `<span class="bg-purple-50/50 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-purple-100">${top}</span>`).join('')}
+                                ${res.gradeRange.map(gr => `<span class="bg-emerald-50/50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-100">Grade: ${gr}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            lucide.createIcons();
+        }
+
+        // --- RENDER ADMIN SPREADSHEET VIEW ---
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-table-body');
+            if(!tbody) return;
+
+            tbody.innerHTML = '';
+            dbResources.forEach(res => {
+                const reviewsCount = res.reviews.length;
+                let avgText = res.totalScore ? res.totalScore.toFixed(1) : '<span class="text-slate-400">Needs Reviews</span>';
+                
+                // Seal state markup
+                let sealHTML = '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-500 border border-slate-200">No Seal</span>';
+                if (res.seal === 'Gold') {
+                    sealHTML = `<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center gap-1 shadow-sm"><i data-lucide="star" class="w-3 h-3 star-gold"></i> Gold</span>`;
+                } else if (res.seal === 'Silver') {
+                    sealHTML = `<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300 flex items-center justify-center gap-1 shadow-sm"><i data-lucide="star" class="w-3 h-3 text-slate-400"></i> Silver</span>`;
+                } else if (reviewsCount >= 3) {
+                    sealHTML = '<span class="px-2.5 py-1 text-xs font-bold rounded-full bg-red-50 text-red-700 border border-red-200">Below Bar</span>';
+                }
+
+                // Map out tags list to raw list strings
+                const combinedTags = [...res.audience.slice(0,2), ...res.topics.slice(0,2)].join(', ');
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 whitespace-normal">
+                            <div class="text-sm font-bold text-slate-900 leading-tight">${res.title}</div>
+                            <div class="text-xs text-slate-400 mt-1">${res.provider}</div>
+                            <a href="${res.url}" target="_blank" class="text-xs text-blue-600 hover:underline font-semibold flex items-center gap-1 mt-1">
+                                <i data-lucide="link" class="w-3 h-3"></i> Open Resource URL
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-normal text-xs text-slate-600">
+                            <div class="space-y-1">
+                                <div><strong class="font-medium">Format:</strong> ${res.resourceType}</div>
+                                <div><strong class="font-medium">Grades:</strong> ${res.gradeRange.join(', ')}</div>
+                                <div class="text-slate-400 font-light truncate max-w-xs">${combinedTags}...</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-xs text-slate-500 font-mono">
+                            ${reviewsCount > 0 ? `[${res.reviews.join(', ')}]` : '<span class="text-slate-300">No scores yet</span>'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-bold ${reviewsCount >= 3 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">
+                                ${reviewsCount} / 3 reviews
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-slate-900">
+                            ${avgText}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            ${sealHTML}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                            <button onclick="openScoringModal(${res.id})" class="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-1.5 ml-auto transition-colors">
+                                <i data-lucide="clipboard-check" class="w-4 h-4"></i> <span class="font-bold text-xs">Score</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            lucide.createIcons();
+        }
+
+        // --- ATTACH SIDEBAR FILTER TRIGGERS ---
+        function attachFilterListeners() {
+            const inputs = document.querySelectorAll('input[name^="filter-"]');
+            inputs.forEach(input => {
+                input.addEventListener('change', applyDynamicFilters);
+            });
+        }
+
+        function applyDynamicFilters() {
+            renderPublicResources();
+        }
+
+        function clearAllFilters() {
+            const inputs = document.querySelectorAll('input[name^="filter-"]');
+            inputs.forEach(input => input.checked = false);
+            const searchInput = document.getElementById('public-search');
+            if (searchInput) searchInput.value = '';
+            
+            selectedPathwaysAudience = null;
+            renderView();
+        }
+
+        // --- MODAL UTILITIES ---
+        function openSubmissionModal() {
+            document.getElementById('submission-form').reset();
+            document.getElementById('submission-modal').classList.remove('hidden');
+        }
+
+        // Open Scoring Modal with parameters
+        function openScoringModal(id) {
+            const resource = dbResources.find(r => r.id === id);
+            if(!resource) return;
+
+            document.getElementById('modal-resource-title').textContent = resource.title;
+            document.getElementById('modal-resource-id').value = id;
+            document.getElementById('rubric-form').reset();
+            
+            document.getElementById('scoring-modal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // --- SUBMIT COMPLETED RUBRIC CHECKLIST ---
+        function submitReview(event) {
+            event.preventDefault();
+            
+            const id = parseInt(document.getElementById('modal-resource-id').value);
+            const resource = dbResources.find(r => r.id === id);
+            if(!resource) return;
+
+            const s1 = parseInt(document.getElementById('score-alignment').value);
+            const s2 = parseInt(document.getElementById('score-utility').value);
+            const s3 = parseInt(document.getElementById('score-equity').value);
+            const s4 = parseInt(document.getElementById('score-quality').value);
+            const s5 = parseInt(document.getElementById('score-currency').value);
+
+            const totalNewScore = s1 + s2 + s3 + s4 + s5; // Max score calculation (total possible = 20)
+            resource.reviews.push(totalNewScore);
+
+            // Re-evaluate quality seal on completing threshold of 3 reviews
+            if (resource.reviews.length >= 3) {
+                const sum = resource.reviews.reduce((acc, curr) => acc + curr, 0);
+                const avg = sum / resource.reviews.length;
+                resource.totalScore = avg;
+
+                if (avg >= 18) {
+                    resource.seal = 'Gold';
+                } else if (avg >= 14) {
+                    resource.seal = 'Silver';
+                } else {
+                    resource.seal = null; // Below 14 does not receive a seal of approval
+                }
+            }
+
+            closeModal('scoring-modal');
+            renderAdminTable();
+        }
+
+        // --- HANDLE SUBMIT NEW RESOURCE FORM ---
+        function handleResourceSubmission(event) {
+            event.preventDefault();
+
+            // Extract generic data inputs
+            const title = document.getElementById('sub-title').value.trim();
+            const url = document.getElementById('sub-url').value.trim();
+            const provider = document.getElementById('sub-provider').value.trim() || 'Contributor Submission';
+            const useCase = document.getElementById('sub-use-case').value.trim();
+            const length = document.getElementById('sub-length').value.trim() || 'Unknown length';
+
+            // Extract multi-select filters tagged
+            const audience = Array.from(document.querySelectorAll('input[name="sub-audience"]:checked')).map(el => el.value);
+            const topics = Array.from(document.querySelectorAll('input[name="sub-topic"]:checked')).map(el => el.value);
+            const gradeRange = Array.from(document.querySelectorAll('input[name="sub-grade"]:checked')).map(el => el.value);
+            const assessmentType = Array.from(document.querySelectorAll('input[name="sub-asstype"]:checked')).map(el => el.value);
+            const resourceType = document.querySelector('input[name="sub-restype"]:checked').value;
+
+            const newResource = {
+                id: dbResources.length + 1,
+                title,
+                url,
+                provider,
+                useCase,
+                length,
+                audience: audience.length > 0 ? audience : ["Public"],
+                topics: topics.length > 0 ? topics : ["Formative Assessment"],
+                gradeRange: gradeRange.length > 0 ? gradeRange : ["All Grades"],
+                assessmentType: assessmentType.length > 0 ? assessmentType : ["Formative Assessment"],
+                resourceType,
+                reviews: [],
+                totalScore: null,
+                seal: null
+            };
+
+            dbResources.push(newResource);
+            closeModal('submission-modal');
+            
+            // Switch view back to public and render results
+            currentView = 'public';
+            renderView();
+        }
+
+        // --- INITIAL RUN ---
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
